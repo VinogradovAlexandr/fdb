@@ -72,8 +72,9 @@ defmodule FDB.Transaction do
   """
   @spec get(t, any, map) :: any
   def get(%Transaction{} = transaction, key, options \\ %{}) when is_map(options) do
+    timeout = options[:timeout] || 5000
     get_q(transaction, key, options)
-    |> Future.await()
+    |> Future.await(timeout)
   end
 
   @doc """
