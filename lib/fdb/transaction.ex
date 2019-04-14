@@ -73,6 +73,7 @@ defmodule FDB.Transaction do
   @spec get(t, any, map) :: any
   def get(%Transaction{} = transaction, key, options \\ %{}) when is_map(options) do
     timeout = options[:timeout] || 5000
+
     get_q(transaction, key, options)
     |> Future.await(timeout)
   end
@@ -770,10 +771,10 @@ defmodule FDB.Transaction do
   `FDB.Option.transaction_option_read_your_writes_disable/0` has been
   invoked, any outstanding reads will immediately return errors.
   """
-  @spec commit(t) :: :ok
-  def commit(%Transaction{} = transaction) do
+  @spec commit(t, timeout) :: :ok
+  def commit(%Transaction{} = transaction, timeout \\ 5000) do
     commit_q(transaction)
-    |> Future.await()
+    |> Future.await(timeout)
   end
 
   @doc """

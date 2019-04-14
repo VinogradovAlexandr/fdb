@@ -120,18 +120,18 @@ defmodule FDB.Database do
   retry behaviour can be configured using
   `FDB.Transaction.set_option/3`
   """
-  @spec transact(t, (Transaction.t() -> any)) :: any
-  def transact(%__MODULE__{} = database, callback) when is_function(callback) do
-    do_transact(Transaction.create(database), callback)
+  @spec transact(t, (Transaction.t() -> any), timeout) :: any
+  def transact(%__MODULE__{} = database, callback, timeout \\ 5000) when is_function(callback) do
+    do_transact(Transaction.create(database), callback, timeout)
   end
 
-  defp do_transact(%Transaction{} = transaction, callback) do
+  defp do_transact(%Transaction{} = transaction, callback, timeout) do
     result = callback.(transaction)
-    :ok = Transaction.commit(transaction)
+    :ok = Transaction.commit(transaction, timeout)
     result
   rescue
     e in FDB.Error ->
       :ok = Transaction.on_error(transaction, e.code)
-      do_transact(transaction, callback)
+      do_transact(transaction, callback, timeout)
   end
 end
